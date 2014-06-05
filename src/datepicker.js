@@ -30,17 +30,31 @@
 
         if (ko.isWriteableObservable(options.value)) {
             origOnSelect = $(element).datepicker('option', 'onSelect');
-            $(element).datepicker('option', 'onSelect', function (selectedText) {
-                var format, date;
 
+            $(element).bind('change', function() {
+                var format, date, selectedText;
+
+                selectedText = $(element).val();
                 format = $(element).datepicker('option', 'dateFormat');
                 date = $.datepicker.parseDate(format, selectedText);
                 options.value(date);
+            });
+
+            $(element).datepicker('option', 'onSelect', function () {
+
+                $(element).trigger('change');
 
                 if (typeof origOnSelect === 'function') {
                     origOnSelect.apply(this, Array.prototype.slice.call(arguments));
                 }
+
+                $(element).trigger('blur');
             });
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                $(element).unbind('change');
+            });
+
         }
     };
 
